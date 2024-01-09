@@ -54,3 +54,11 @@ When adding that to the database, we currently loop one by one to add them to th
 
 However, there being only 168 hours a week, the maximum performance penalty is barely a few milliseconds. I therefore chose to temporarily ignore the suggestion so that we could focus on completing other features.
 I believe there are times when not all optimizations are worth it. For example, during this time, the CSIL API cache has yet to been completed. When done, it reduced API latency from 700-900 ms to 200-300 ms. Compared to savings of less than 10 ms on an infrequent operation, it should objectively be put on the backlog and done in the future.
+
+# Task 3B: Discussion on the use of source control to improve software quality
+
+Git can improve software quality and developer experience in a number of ways.
+- By using `git bisect`, developers can easily find the exact commit in which a bug was introduced. As each git commit includes a snapshot of the repository at the time, we can always `reset --hard` to a working state. During our client project, the calendar picker mysteriously broke, causing an infinite loop and crashing browsers. Using `git bisect`, we were able to locate the commit causing it and selectively `git revert`.
+- Branching allows different features to be developed in isolation and prevents having a moving target. For example, our back end code was factored into multiple modules, including the storage module that abstracted database access away from the core app. There were multiple times when the storage was refactored (e.g. to support multiple database formats). If this was done on the branch as another feature that used the module in a way no longer supported, more work would have to be done to keep up with changes. Instead with branching, this can be done instead: ![image](https://github.com/fidraC/team9-client-project/assets/144536228/8eb5d8fd-26da-4ae9-ba2d-804bcb176df2)
+
+To keep everything even better versioned, we can use semantic versioning with git submodules. Using tagging, we can maintain multiple versions of the repository and backport universal changes that don't breaking compatibility via `git cherry-pick`.
