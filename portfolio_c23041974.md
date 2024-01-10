@@ -53,7 +53,7 @@ Availability timeslots for demos can be specified by the admin. The UI allows th
 When adding that to the database, we currently loop one by one to add them to the database. This is of course less efficient than using a batch query.
 
 However, there being only 168 hours a week, the maximum performance penalty is barely a few milliseconds. I therefore chose to temporarily ignore the suggestion so that we could focus on completing other features.
-I believe there are times when not all optimizations are worth it. For example, during this time, the CSIL API cache has yet to been completed. When done, it reduced API latency from 700-900 ms to 200-300 ms. Compared to savings of less than 10 ms on an infrequent operation, it should objectively be put on the backlog and done in the future.
+I believe there are times when not all optimizations are worth it. For example, during this time, the CSIL API cache has yet to been completed. When done, it reduced API latency from 580-800 ms to 190-250 ms ms. Compared to savings of less than 10 ms on an infrequent operation, it should objectively be put on the backlog and done in the future.
 
 # Task 3B: Discussion on the use of source control to improve software quality
 
@@ -62,3 +62,7 @@ Git can improve software quality and developer experience in a number of ways.
 - Branching allows different features to be developed in isolation and prevents having a moving target. For example, our back end code was factored into multiple modules, including the storage module that abstracted database access away from the core app. There were multiple times when the storage was refactored (e.g. to support multiple database formats). If this was done on the branch as another feature that used the module in a way no longer supported, more work would have to be done to keep up with changes. Instead with branching, this can be done instead: ![image](https://github.com/fidraC/team9-client-project/assets/144536228/8eb5d8fd-26da-4ae9-ba2d-804bcb176df2)
 
 To keep everything even better versioned, we can use semantic versioning with git submodules. Using tagging, we can maintain multiple versions of the repository and backport universal changes that don't breaking compatibility via `git cherry-pick`.
+
+Somewhat tangentially related to `git`, we also made use of automated [workflows](https://git.cardiff.ac.uk/c22067305/team-9-client-project/-/blob/development/.gitlab-ci.yml?ref_type=heads) (GitLab CI/CD) for automated [testing](https://git.cardiff.ac.uk/c22067305/team-9-client-project/-/blob/development/test_storage.py?ref_type=heads) and [deployment](https://git.cardiff.ac.uk/c22067305/team-9-client-project/-/blob/development/deployment/app.py?ref_type=heads). The deployment is triggered when a merge request is made or when new commits are added to the associated branch, allowing us to quickly test functionality before merging. This also catches issues with dependency management (e.g. forgetting to put a package in `requirements.txt` which happened more than once) and generally ensures that the code doesn't *just* "works on my machine".
+
+![image](https://github.com/fidraC/team9-client-project/assets/144536228/d1b6112f-3303-470e-be56-71d1e237b521)
