@@ -1,4 +1,27 @@
-# Task 1B
+# Task 1B: Discuss and reflect on tracking your project progress using Scrum
+
+Scrum is an agile framework used for developing, delivering, and sustaining complex projects, particularly in software development. It operates on the principles of flexibility, team collaboration, and iterative progress towards a well-defined goal. During the scrum cycle, there are multiple stages to be completed:
+
+- Sprint Planning: At the start of a Sprint, the team holds a planning meeting to decide what work will be done.
+
+During the first planning phase, I "wireframed" the back end in the form of defining dataclasses and typed hinted abstract classes. ![image](https://github.com/fidraC/team9-client-project/assets/144536228/49a3431b-d74f-4729-8685-ff42c0944ac8)
+![image](https://github.com/fidraC/team9-client-project/assets/144536228/b395e844-acc1-47ab-85a4-cec52fb49a26)
+
+This was important as we were able to set out the general shape of the API on the first day so that other team members could work on features depending on a API without worrying about implementation details. This significantly sped up development as we could simply mock the function with fake (but valid) data while the underlying implementation was being written so components on top of it (e.g. the front end) can be written and tested with minimal technical debt (doesn't need to be refactored when implementation is complete). Compared to the waterfall method where each step must be completed before the next, this allows for more concurrency and thus efficiency.
+
+- Daily Scrum: Each day during the Sprint, the team has a short stand-up meeting (often 15 minutes or less) called the Daily Scrum. In this meeting, team members briefly discuss what they did the previous day, what they will do today, and any obstacles they're facing.
+
+With half our team missing on most days in, we spent relatively little time on scrum as the three of us that were there are pretty in sync, often working together to debug and throwing questions around.
+
+- Sprint Execution: Over the Sprint, the team works on the tasks, developing and testing functionalities. The goal is to create a potentially shippable product increment by the end of the Sprint.
+
+- Sprint Review: At the end of the Sprint, the team presents the completed work to stakeholders (including the Product Owner) in the Sprint Review meeting. This is an opportunity to showcase the progress and gather feedback.
+
+One flaw with our team was that we had a tendency to go off track after completing the tasks set out in the sprint (e.g. We made a CI/CD testing&deployment system because why not). The sprint review helped pull us back on track. The product owner might ask: "is this really in scope?" (no) and we go back to grinding the open issues.
+
+- Sprint Retrospective: After the review and before the next Sprint planning, the team holds a retrospective meeting to reflect on the Sprint. They discuss what went well, what didn't, and how processes can be improved.
+
+Overall, the scrum method has been pretty effective at keeping track of progress and making sure we stayed within scope. However, due to the speed and lack of documentation, it was difficult to onboard team members that had a delayed entry (due to injury etc).
 
 # Task 2B: Reflecting on the use of code review to improve code quality
 
