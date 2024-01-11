@@ -28,7 +28,7 @@ def get_users():
     <div>
       <button
         type="button"
-        class="status-${status}-approve"
+        class="${status}-approve"
         style="color: white; background-color: green"
         onclick="req(${id}, 'PATCH')"
       >
@@ -63,15 +63,23 @@ async function req(id, method) {
   }
 }
 ```
-In our client project, we decided to use JSON to communicate between the server (Python Flask) and client (Browser) and use client side rendering using the [HTMJ](https://github.com/acheong08/HTMJ) framework. We chose to make the client side code (HTML/CSS/JS) static so that the files can be easily cached by CDNs and browsers, reducing server load and minimizing load times. 
+As can be seen in the code above, a JavaScript framework [HTMJ](https://github.com/acheong08/HTMJ) was used for client side rendering of JSON responses. I wrote the framework inspired by HTMX but using JSON and HTML templates rather than server side rendering. 
 
-Parts of our site is public facing and thus SEO is important, which is why dynamic/client side rendering (which is bad for search engines that don't execute JavaScript) is only used for non-public facing pages.
+The HTML attributes specify the behavior of the component:
+```
+  hx-endpoint="/api/admin/users" # The endpoint to call
+  hx-data-sources="#status" # The JSON data to send. In this case {"status": init}
+  hx-method="GET"           # The HTTP method (GET/POST/PATCH/DELETE)
+  hx-event="onload, onchange" # What JavaScripts events trigger a request
+  hx-event-target="#status"   # Which event source should be used
+ ```
+This also makes the site reactive as changing the status code (pending/approved) will automatically refresh the data shown without a page refresh
 
-As HTML forms do not support the `PATCH` and `DELETE` HTTP methods, we used JavaScript in these cases to keep our API semantically "correct".
+This approach was chosen instead of Jinja and/or HTMX to cleanly separate front and back end logic. By having rendering be done on the client side rather than having snippets of HTML being served from the API or templating the full file, server load and bandwidth are both reduced. The static HTML/JS can be easily cached by CDNs/Browsers and thus also makes load times faster. However, excessive use of client side rendering is bad for SEO as many crawlers do not take into account JavaScript. Parts of our site is public facing and thus SEO is important, which is why dynamic/client side rendering is only used for non-public facing pages.
 
-During the project, we spent much effort avoiding third party dependencies to make our site as light weight as possible. I now realize that this was a mistake as it did not take into account that our client is based in the UK where internet speed is fast enough that a few megabytes are negligable. `HTMJ` is a framework made by our team to imitate HTMX but using client templates instead of server side rendering. As can be seen in the weird CSS class workarounds (`class="deny-${status}"` and `class="status-${status}-approve"`) used to hide/show the appropriate buttons based on user status, the framework was not fully featured and lacked functionality such as if conditions. This could've been improved by using a well established framework like HTMX instead which would've allowed us to move this to the server side.
+One disadvantage of HTMJ is the lack of ability to handle rendering logic. For example, I want to hide the "Approve" button if the account is already approved. This can be fixed with a bit more work on the framework, but to save time, I used CSS classes: `class="${status}-approve"` and `class="deny-${status}"`to handle the logic of hiding/showing the buttons.
 
-From another perspective, the use of JSON to communicate allowed our team to be more productive as it allowed different people to work on the front and back end simultaneously as long as the API spec was defined beforehand, also making it easy to mock the API before it was complete (e.g. returning hard coded test values while the back end is being worked on in a different branch).
+JavaScript was used to add interactivity and handle requests rather than using `<form>` as forms do not support the full range of HTTP methods (e.g. PATCH/DELETE). This was not necessary but I felt that it made the code more understandable to use the semantically correct methods.
 
 ## Section 2: Database back end
 
@@ -188,9 +196,31 @@ def signup(self, user: User) -> int:
         ),
     )
 ```
+```py
+@app.post("/api/login")
+@utilities.PermissionsRequired().not_logged_in
+def login():
+    email = request.form.get("email")
+    password = request.form.get("password")
+    try:
+        user, success = store.login(email, password)
+    except Exception as exc:
+        print(exc)
+        return flask.redirect("/login?error=User not found")
+    if not success:
+        return flask.redirect("/login?error=Email or password is incorrect")
+    token = utilities.create_jwt(user)
+    resp = flask.Response("", 302)
+    resp.set_cookie("auth", token)
+    resp.headers.add("location", "/")
+    return resp
 
-
+```
 For authentication, we used `bcrypt` for password hashing and `jwt` tokens stored in cookies. `bcrypt` is a secure hash which incorporates a random salt by default, protecting against rainbow table attacks. On the client side, we used JWT tokens to reduce database access and also allow for load balancing. By having multiple servers configured with the same Postgres database and secret JWT key, we can load balance between them without sharing state such as a session token. However, JWTs make revocation difficult, meaning that we might still need a share revocation list. This was not implemented in our project and is thus a possible security vulnerability that needs to be fixed in future iterations.
+
+In Python Flask, we use the `set-cookie` header to store the JWT token on the browser and `302` status code to denote a temporary redirect to the root path. From then on, the browser will pass the cookie in a header on each request. We can then use decorators to denote paths that require authentication.
+
+There are inconsistencies in our HTTP status codes as we did not confidently make a decision whether to handle them via JavaScript or use 302 redirects to show the user whether or not the operation was a success.
 
 While implementing JWT, we used the default HS256 algorithm. This choice, while not obvious at the time, also made the implementation of other features difficult to do securely (See live chat section)
 
@@ -305,4 +335,3 @@ Given more time, this is how I would design it instead:
 - Serve the public key from an endpoint on the main server
 - When a new websocket connection is created, the chat server checks the origin header and contacts the main server for a public key
 - The JWT token is also sent to the chat server which validates it with the public key. The admin status is encoded as part of the JWT
-
